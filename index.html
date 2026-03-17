@@ -439,6 +439,16 @@
 
         // 페이지 로드 시 초기화
         window.addEventListener('load', init);
+
+        // 우클릭 방지 스크립트
+document.addEventListener('contextmenu', function(e) {
+  e.preventDefault();
+}, false);
+
+// 드래그 및 선택 방지
+document.addEventListener('selectstart', function(e) {
+  e.preventDefault();
+}, false);
     </script>
 </body>
 </html>
