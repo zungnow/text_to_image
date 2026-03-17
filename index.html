@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>텍스트 표장 생성기</title>
+    <!-- 맑은 고딕(한글), Times New Roman(영문) - 시스템 폰트 사용 -->
+    <link rel="icon" href="YH-SOFT.ico" type="image/x-icon">
+    <style>
+        :root {
+            --primary: #1a1a2e;
+            --secondary: #16213e;
+            --accent: #e94560;
+            --accent-light: #ff6b8a;
+            --text: #2c2c54;
+            --text-light: #6c6c8a;
+            --bg: #faf9f6;
+            --card: #ffffff;
+            --border: #e8e6e3;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Malgun Gothic", "맑은 고딕", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .title {
+            font-family: "Malgun Gothic", "맑은 고딕", sans-serif;
+            font-size: 3rem;
+            font-weight: 900;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.02em;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: var(--text-light);
+            font-weight: 400;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+            .title {
+                font-size: 2rem;
+            }
+        }
+
+        .card {
+            background: var(--card);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(26, 26, 46, 0.08);
+            border: 1px solid var(--border);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            box-shadow: 0 15px 40px rgba(26, 26, 46, 0.12);
+            transform: translateY(-2px);
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+        }
+
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .label {
+            display: block;
+            font-weight: 500;
+            color: var(--text);
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        .textarea {
+            width: 100%;
+            height: 200px;
+            padding: 1rem;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            font-family: "Times New Roman", "Malgun Gothic", "맑은 고딕", serif;
+            font-size: 1rem;
+            line-height: 1.5;
+            background: var(--bg);
+            transition: all 0.3s ease;
+            resize: vertical;
+        }
+
+        .textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(233, 69, 96, 0.1);
+        }
+
+        .button {
+            width: 100%;
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(233, 69, 96, 0.3);
+        }
+
+        .button:active {
+            transform: translateY(0);
+        }
+
+        .preview-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .canvas-wrapper {
+            position: relative;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        #preview-canvas {
+            display: block;
+            max-width: 100%;
+            height: auto;
+        }
+
+        .download-btn {
+            padding: 0.8rem 1.5rem;
+            background: var(--secondary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .download-btn:hover {
+            background: var(--primary);
+            transform: translateY(-1px);
+        }
+
+        .info {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 15px;
+            text-align: center;
+            margin-top: 2rem;
+        }
+
+        .info-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .feature {
+            background: var(--card);
+            padding: 1.5rem;
+            border-radius: 15px;
+            text-align: center;
+            border: 1px solid var(--border);
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .feature-desc {
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header fade-in">
+            <h1 class="title">텍스트 표장 생성기</h1>
+            <p class="subtitle">원하는 텍스트를 입력하세요</p>
+        </div>
+
+        <div class="main-grid">
+            <div class="card fade-in">
+                <h2 class="card-title">✏️ 텍스트 입력</h2>
+                <div class="input-group">
+                    <label class="label">표장 내용을 입력하세요</label>
+                    <textarea 
+                        id="text-input" 
+                        class="textarea" 
+                        placeholder="여러 줄 입력 가능합니다&#10;자동으로 크기가 조절됩니다"
+                    ></textarea>
+                </div>
+                <button class="button" onclick="generateImage()">🎨 이미지 생성</button>
+                <div class="loading" id="loading">이미지 생성 중...</div>
+            </div>
+
+            <div class="card fade-in">
+                <h2 class="card-title">🖼️ 미리보기</h2>
+                <div class="preview-container">
+                    <div class="canvas-wrapper">
+                        <canvas id="preview-canvas" width="945" height="945"></canvas>
+                    </div>
+                    <a id="download-link" class="download-btn" style="display: none;">📥 JPG 다운로드</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="info fade-in">
+            <div class="info-icon">ℹ️</div>
+            <strong>8cm × 8cm, 300 DPI</strong><br>
+            입력한 텍스트가 파일명이 됩니다 👍
+        </div>
+
+        <div class="feature-grid">
+            <div class="feature fade-in">
+                <div class="feature-icon">🔤</div>
+                <div class="feature-title">지정 글꼴</div>
+                <div class="feature-desc">한글: 맑은 고딕 / 영문: Times New Roman</div>
+            </div>
+            <div class="feature fade-in">
+                <div class="feature-icon">📏</div>
+                <div class="feature-title">자동 크기 조절</div>
+                <div class="feature-desc">텍스트 길이에 맞춰 폰트 크기 자동 조정</div>
+            </div>
+            <div class="feature fade-in">
+                <div class="feature-icon">🎯</div>
+                <div class="feature-title">문의사항</div>
+                <div class="feature-desc">있으시면 정영현 과장에게 연락주세요</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let canvas, ctx;
+
+        function init() {
+            canvas = document.getElementById('preview-canvas');
+            ctx = canvas.getContext('2d');
+            
+            // 초기 캔버스 설정
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, 945, 945);
+            
+            // 가이드 텍스트
+            ctx.fillStyle = '#cccccc';
+            ctx.font = '24px "Malgun Gothic", "맑은 고딕", sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('텍스트를 입력 후 생성 버튼을 눌러주세요', 472.5, 472.5);
+        }
+
+        function cleanFilename(text) {
+            const fullText = text.replace(/\n/g, ' ').trim();
+            const cleaned = fullText.replace(/[\/\\:\*\?"<>\|]/g, '');
+            return cleaned.substring(0, 150);
+        }
+
+        function measureText(text, font) {
+            ctx.font = font;
+            return ctx.measureText(text).width;
+        }
+
+        function getOptimalFontSize(lines, maxWidth, maxHeight) {
+            let fontSize = 200;
+            const lineSpacingRatio = 1.2;
+            
+            while (fontSize > 10) {
+                const fontString = `${fontSize}px "Times New Roman", "Malgun Gothic", "맑은 고딕", serif`;
+                
+                // 각 줄의 너비 계산
+                let maxLineWidth = 0;
+                for (let line of lines) {
+                    const width = measureText(line, fontString);
+                    maxLineWidth = Math.max(maxLineWidth, width);
+                }
+                
+                // 전체 높이 계산
+                const totalHeight = lines.length * fontSize * lineSpacingRatio;
+                
+                // 70% 범위 내에 들어오는지 확인
+                if (maxLineWidth <= maxWidth * 0.7 && totalHeight <= maxHeight * 0.7) {
+                    return fontSize;
+                }
+                
+                fontSize -= 5;
+            }
+            
+            return fontSize;
+        }
+
+        async function generateImage() {
+            const text = document.getElementById('text-input').value.trim();
+            
+            if (!text) {
+                alert('텍스트를 입력해주세요.');
+                return;
+            }
+
+            // 로딩 상태 표시
+            document.getElementById('loading').style.display = 'block';
+            document.querySelector('.button').disabled = true;
+
+            // 약간의 지연 후 생성 (UI 반응성)
+            setTimeout(() => {
+                try {
+                    // 캔버스 초기화
+                    ctx.fillStyle = 'white';
+                    ctx.fillRect(0, 0, 945, 945);
+                    
+                    const lines = text.split('\n');
+                    const fontSize = getOptimalFontSize(lines, 945, 945);
+                    const lineSpacing = fontSize * 0.2;
+                    
+                    // 전체 블록 높이 계산 (alphabetic baseline 보정: fontSize의 약 20% 위로)
+                    const totalBlockHeight = lines.length * (fontSize + lineSpacing) - lineSpacing;
+                    let currentY = (945 - totalBlockHeight) / 2 + fontSize * 0.8;
+                    
+                    // 텍스트 렌더링 설정
+                    ctx.fillStyle = 'black';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'alphabetic';
+                    
+                    // 각 줄 렌더링
+                    for (let line of lines) {
+                        ctx.font = `${fontSize}px "Times New Roman", "Malgun Gothic", "맑은 고딕", serif`;
+                        ctx.fillText(line, 472.5, currentY);
+                        currentY += fontSize + lineSpacing;
+                    }
+                    
+                    // 다운로드 링크 생성
+                    const fileName = `${cleanFilename(text)}.jpg`;
+                    canvas.toBlob((blob) => {
+                        const url = URL.createObjectURL(blob);
+                        const downloadLink = document.getElementById('download-link');
+                        downloadLink.href = url;
+                        downloadLink.download = fileName;
+                        downloadLink.style.display = 'inline-block';
+                        downloadLink.classList.add('fade-in');
+                    }, 'image/jpeg', 1.0);
+                    
+                } catch (error) {
+                    alert('이미지 생성 중 오류가 발생했습니다: ' + error.message);
+                } finally {
+                    // 로딩 상태 해제
+                    document.getElementById('loading').style.display = 'none';
+                    document.querySelector('.button').disabled = false;
+                }
+            }, 100);
+        }
+
+        // 엔터키 지원
+        document.getElementById('text-input').addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'Enter') {
+                generateImage();
+            }
+        });
+
+        // 페이지 로드 시 초기화
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>
