@@ -270,9 +270,9 @@
             <div class="setting-row">
                 <label>🔤 기본 폰트:</label>
                 <select class="font-select" id="default-font-select">
-                    <!-- 영문: Times New Roman / 한글 fallback: 맑은 고딕 -->
-                    <option value='"Times New Roman","Malgun Gothic","맑은 고딕",serif'>Times New Roman (기본)</option>
-                    <option value='"Malgun Gothic","맑은 고딕",sans-serif'>맑은 고딕</option>
+                    <!-- 기본 폰트: 맑은 고딕 (영문 fallback: Times New Roman) -->
+                    <option value='"Malgun Gothic","맑은 고딕",sans-serif'>맑은 고딕 (기본)</option>
+                    <option value='"Times New Roman","Malgun Gothic","맑은 고딕",serif'>Times New Roman</option>
                     <option value='"Gulim","굴림",sans-serif'>굴림</option>
                     <option value='"Dotum","돋움",sans-serif'>돋움</option>
                     <option value='"Batang","바탕",serif'>바탕</option>
@@ -308,7 +308,7 @@
 
             <!-- 부분 적용 안내 힌트 -->
             <div class="toolbar-hint">
-                💡 텍스트를 <strong>드래그</strong>해서 선택 후, 폰트/크기를 골라 <strong>적용</strong> 버튼을 누르세요
+                💡 텍스트를 <strong>선택</strong> 후, 폰트/크기를 <strong>적용</strong>하세요
             </div>
 
             <!-- 부분 적용 툴바 -->
@@ -374,7 +374,7 @@
             <div id="editor" contenteditable="true" spellcheck="false"></div>
 
             <!-- 이미지 생성 버튼 -->
-            <button class="button" onclick="generateImage()">🎨 이미지 생성 (Ctrl+Enter)</button>
+            <button class="button" onclick="generateImage()">🎨 이미지 생성</button>
             <div class="loading" id="loading">이미지 생성 중...</div>
         </div>
 
@@ -397,7 +397,7 @@
 
     <!-- 하단 정보 배너 -->
     <div class="info fade-in">
-        ℹ️ &nbsp;<strong>8cm × 8cm, 300 DPI </strong> &nbsp;|&nbsp; 입력한 텍스트가 파일명이 됩니다 👍
+        ℹ️ &nbsp;<strong>8cm × 8cm, 300 DPI </strong> &nbsp;|&nbsp; 입력한 텍스트가 파일명이 됩니다 👍 (by YHJ)
     </div>
 
 </div><!-- /.container -->
