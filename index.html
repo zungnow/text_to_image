@@ -4,456 +4,719 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>텍스트 표장 생성기</title>
-    <!-- 맑은 고딕(한글), Times New Roman(영문) - 시스템 폰트 사용 -->
-    <link rel="icon" href="YH-SOFT.ico" type="image/x-icon">
+
     <style>
+        /* -------------------------------------------------------
+           1. CSS 변수 (색상·폰트 등 전역 설정)
+        ------------------------------------------------------- */
         :root {
-            --primary: #1a1a2e;
-            --secondary: #16213e;
-            --accent: #e94560;
-            --accent-light: #ff6b8a;
-            --text: #2c2c54;
-            --text-light: #6c6c8a;
-            --bg: #faf9f6;
-            --card: #ffffff;
-            --border: #e8e6e3;
+            --primary:      #1a1a2e;   /* 진한 네이비: 제목·강조 텍스트 */
+            --secondary:    #16213e;   /* 다운로드 버튼 배경 */
+            --accent:       #e94560;   /* 포인트 빨강: 버튼·테두리 강조 */
+            --accent-light: #ff6b8a;   /* 포인트 밝은 빨강: 그라디언트 끝 색 */
+            --text:         #2c2c54;   /* 기본 본문 텍스트 */
+            --text-light:   #6c6c8a;   /* 보조 텍스트 (라벨·힌트) */
+            --bg:           #faf9f6;   /* 전체 배경 및 입력 필드 배경 */
+            --card:         #ffffff;   /* 카드 배경 흰색 */
+            --border:       #e8e6e3;   /* 테두리 기본 색 */
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        /* -------------------------------------------------------
+           2. 리셋 및 body 기본 스타일
+        ------------------------------------------------------- */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            font-family: "Malgun Gothic", "맑은 고딕", sans-serif;
+            font-family: "Malgun Gothic", "맑은 고딕", sans-serif; /* 기본 UI 폰트 */
             background: var(--bg);
             color: var(--text);
             line-height: 1.6;
             min-height: 100vh;
         }
 
+        /* -------------------------------------------------------
+           3. 레이아웃: 컨테이너 / 헤더
+        ------------------------------------------------------- */
         .container {
-            max-width: 1000px;
+            max-width: 1060px;        /* 최대 너비 제한 */
             margin: 0 auto;
             padding: 2rem 1rem;
         }
 
-        .header {
-            text-align: center;
-            margin-bottom: 3rem;
-        }
+        .header { text-align: center; margin-bottom: 2.5rem; }
 
         .title {
             font-family: "Malgun Gothic", "맑은 고딕", sans-serif;
-            font-size: 3rem;
-            font-weight: 900;
-            color: var(--primary);
-            margin-bottom: 0.5rem;
-            letter-spacing: -0.02em;
+            font-size: 2.8rem; font-weight: 900;
+            color: var(--primary); margin-bottom: 0.4rem;
         }
 
-        .subtitle {
-            font-size: 1.1rem;
-            color: var(--text-light);
-            font-weight: 400;
-        }
+        .subtitle { font-size: 1.05rem; color: var(--text-light); }
 
+        /* 2열 그리드: 입력 카드 | 미리보기 카드 */
         .main-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 2rem;
-            margin-bottom: 2rem;
+            gap: 2rem; margin-bottom: 2rem;
         }
 
+        /* 모바일: 1열로 전환 */
         @media (max-width: 768px) {
-            .main-grid {
-                grid-template-columns: 1fr;
-            }
-            .title {
-                font-size: 2rem;
-            }
+            .main-grid { grid-template-columns: 1fr; }
+            .title { font-size: 2rem; }
         }
 
+        /* -------------------------------------------------------
+           4. 카드 컴포넌트
+        ------------------------------------------------------- */
         .card {
             background: var(--card);
-            border-radius: 20px;
-            padding: 2rem;
+            border-radius: 20px; padding: 2rem;
             box-shadow: 0 10px 30px rgba(26, 26, 46, 0.08);
             border: 1px solid var(--border);
-            transition: all 0.3s ease;
-        }
-
-        .card:hover {
-            box-shadow: 0 15px 40px rgba(26, 26, 46, 0.12);
-            transform: translateY(-2px);
         }
 
         .card-title {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--primary);
-            margin-bottom: 1.5rem;
+            font-size: 1.4rem; font-weight: 700;
+            color: var(--primary); margin-bottom: 1.2rem;
         }
 
-        .input-group {
-            margin-bottom: 1.5rem;
+        /* -------------------------------------------------------
+           5. 폰트·크기 설정 행 (기본 폰트 / 크기 모드)
+        ------------------------------------------------------- */
+
+        /* 라벨 + 컨트롤을 가로로 배치하는 범용 행 */
+        .setting-row {
+            display: flex; align-items: center; gap: 0.6rem;
+            margin-bottom: 1rem; flex-wrap: wrap;
         }
 
-        .label {
-            display: block;
-            font-weight: 500;
-            color: var(--text);
-            margin-bottom: 0.5rem;
+        .setting-row label {
+            font-size: 0.85rem; font-weight: 600;
+            color: var(--text-light); white-space: nowrap;
+        }
+
+        /* 드롭다운 공통 스타일 */
+        .font-select {
+            padding: 0.45rem 0.8rem;
+            border: 2px solid var(--border); border-radius: 8px;
             font-size: 0.95rem;
+            font-family: "Malgun Gothic", "맑은 고딕", sans-serif;
+            background: var(--bg); color: var(--text);
+            cursor: pointer; transition: border-color 0.2s;
+            flex: 1; min-width: 160px;
         }
+        .font-select:focus { outline: none; border-color: var(--accent); }
 
-        .textarea {
-            width: 100%;
-            height: 200px;
-            padding: 1rem;
-            border: 2px solid var(--border);
-            border-radius: 12px;
-            font-family: "Times New Roman", "Malgun Gothic", "맑은 고딕", serif;
-            font-size: 1rem;
-            line-height: 1.5;
+        /* 크기 직접 입력 필드 */
+        .size-number-input {
+            width: 70px; padding: 0.4rem 0.5rem;
+            border: 2px solid var(--border); border-radius: 8px;
+            font-size: 0.95rem; text-align: center;
             background: var(--bg);
-            transition: all 0.3s ease;
-            resize: vertical;
+        }
+        .size-number-input:focus { outline: none; border-color: var(--accent); }
+
+        /* -------------------------------------------------------
+           6. 부분 적용 툴바 (드래그 선택 → 폰트/크기 적용)
+        ------------------------------------------------------- */
+
+        /* 힌트 박스 */
+        .toolbar-hint {
+            font-size: 0.78rem; color: var(--text-light);
+            margin-bottom: 0.6rem; padding: 0.5rem 0.8rem;
+            background: #f0f0f8; border-radius: 8px;
+            border-left: 3px solid var(--accent);
         }
 
-        .textarea:focus {
-            outline: none;
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px rgba(233, 69, 96, 0.1);
+        /* 툴바 행 */
+        .font-toolbar {
+            display: flex; align-items: center; gap: 0.6rem;
+            margin-bottom: 0.8rem; flex-wrap: wrap;
         }
 
+        .font-toolbar label {
+            font-size: 0.85rem; font-weight: 600;
+            color: var(--text-light); white-space: nowrap;
+        }
+
+        /* [적용] 버튼 */
+        .apply-btn {
+            padding: 0.45rem 1rem;
+            background: linear-gradient(135deg, var(--accent), var(--accent-light));
+            color: white; border: none; border-radius: 8px;
+            font-size: 0.85rem; font-weight: 600;
+            cursor: pointer; transition: all 0.2s; white-space: nowrap;
+            font-family: "Malgun Gothic", "맑은 고딕", sans-serif;
+        }
+        .apply-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(233,69,96,0.3); }
+
+        /* [초기화] 버튼 */
+        .reset-btn {
+            padding: 0.45rem 0.8rem;
+            background: var(--bg); color: var(--text-light);
+            border: 2px solid var(--border); border-radius: 8px;
+            font-size: 0.85rem; cursor: pointer; transition: all 0.2s; white-space: nowrap;
+            font-family: "Malgun Gothic", "맑은 고딕", sans-serif;
+        }
+        .reset-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+        /* -------------------------------------------------------
+           7. 텍스트 에디터 (contenteditable)
+        ------------------------------------------------------- */
+        #editor {
+            width: 100%; min-height: 180px; max-height: 280px;
+            padding: 1rem;
+            border: 2px solid var(--border); border-radius: 12px;
+            font-size: 1.1rem; line-height: 1.7;
+            background: var(--bg);
+            transition: border-color 0.3s;
+            overflow-y: auto; outline: none;
+            white-space: pre-wrap; word-break: break-all;
+            margin-bottom: 1rem;
+        }
+        #editor:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(233,69,96,0.1); }
+
+        /* 비어있을 때 placeholder 표시 */
+        #editor:empty::before {
+            content: "표장 내용을 입력하세요";
+            color: #bbb; pointer-events: none;
+        }
+
+        /* -------------------------------------------------------
+           8. 이미지 생성 버튼 / 로딩
+        ------------------------------------------------------- */
         .button {
-            width: 100%;
-            padding: 1rem 2rem;
+            width: 100%; padding: 0.9rem 2rem;
             background: linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            color: white; border: none; border-radius: 12px;
+            font-size: 1rem; font-weight: 600; cursor: pointer;
+            transition: all 0.3s; letter-spacing: 0.3px;
+            font-family: "Malgun Gothic", "맑은 고딕", sans-serif;
+        }
+        .button:hover    { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(233,69,96,0.3); }
+        .button:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+        .loading {
+            display: none; text-align: center;
+            color: var(--text-light); font-style: italic;
+            margin-top: 0.5rem; font-size: 0.9rem;
         }
 
-        .button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(233, 69, 96, 0.3);
-        }
-
-        .button:active {
-            transform: translateY(0);
-        }
-
+        /* -------------------------------------------------------
+           9. 미리보기 영역 (캔버스 + 다운로드 버튼)
+        ------------------------------------------------------- */
         .preview-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 1.5rem;
+            display: flex; flex-direction: column;
+            align-items: center; gap: 1.2rem;
         }
 
         .canvas-wrapper {
-            position: relative;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            border-radius: 12px; overflow: hidden;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
         }
 
-        #preview-canvas {
-            display: block;
-            max-width: 100%;
-            height: auto;
-        }
+        /* 캔버스: 컨테이너 폭에 맞게 축소, 비율 유지 */
+        #preview-canvas { display: block; max-width: 100%; height: auto; }
 
         .download-btn {
-            padding: 0.8rem 1.5rem;
-            background: var(--secondary);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            background: var(--secondary); color: white;
+            border: none; border-radius: 8px;
+            font-size: 0.9rem; font-weight: 500;
+            cursor: pointer; transition: all 0.3s;
+            text-decoration: none; display: inline-block;
+            font-family: "Malgun Gothic", "맑은 고딕", sans-serif;
         }
+        .download-btn:hover { background: var(--primary); transform: translateY(-1px); }
 
-        .download-btn:hover {
-            background: var(--primary);
-            transform: translateY(-1px);
-        }
-
+        /* -------------------------------------------------------
+           10. 하단 정보 배너 / 애니메이션
+        ------------------------------------------------------- */
         .info {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 1.5rem;
-            border-radius: 15px;
-            text-align: center;
-            margin-top: 2rem;
+            color: white; padding: 1.3rem; border-radius: 15px;
+            text-align: center; margin-top: 2rem; font-size: 0.95rem;
         }
 
-        .info-icon {
-            font-size: 2rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .loading {
-            display: none;
-            text-align: center;
-            color: var(--text-light);
-            font-style: italic;
-        }
-
-        .fade-in {
-            animation: fadeIn 0.6s ease-out;
-        }
+        .fade-in { animation: fadeIn 0.5s ease-out; }
 
         @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .feature-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
-            margin-top: 2rem;
-        }
-
-        .feature {
-            background: var(--card);
-            padding: 1.5rem;
-            border-radius: 15px;
-            text-align: center;
-            border: 1px solid var(--border);
-        }
-
-        .feature-icon {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-        }
-
-        .feature-title {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: var(--primary);
-            margin-bottom: 0.5rem;
-        }
-
-        .feature-desc {
-            font-size: 0.9rem;
-            color: var(--text-light);
+            from { opacity: 0; transform: translateY(16px); }
+            to   { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header fade-in">
-            <h1 class="title">텍스트 표장 생성기</h1>
-            <p class="subtitle">원하는 텍스트를 입력하세요</p>
-        </div>
+<div class="container">
 
-        <div class="main-grid">
-            <div class="card fade-in">
-                <h2 class="card-title">✏️ 입력</h2>
-                <div class="input-group">
-                    <label class="label">상표 명칭을 입력하세요</label>
-                    <textarea 
-                        id="text-input" 
-                        class="textarea" 
-                        placeholder="여러 줄 입력 가능합니다&#10;자동으로 크기가 조절됩니다"
-                    ></textarea>
-                </div>
-                <button class="button" onclick="generateImage()">🎨 이미지 생성</button>
-                <div class="loading" id="loading">이미지 생성 중...</div>
-            </div>
-
-            <div class="card fade-in">
-                <h2 class="card-title">🖼️ 미리보기</h2>
-                <div class="preview-container">
-                    <div class="canvas-wrapper">
-                        <canvas id="preview-canvas" width="945" height="945"></canvas>
-                    </div>
-                    <a id="download-link" class="download-btn" style="display: none;">📥 JPG 다운로드</a>
-                </div>
-            </div>
-        </div>
-
-        <div class="info fade-in">
-            <div class="info-icon">ℹ️</div>
-            <strong>8cm × 8cm, 300 DPI</strong><br>
-            입력한 텍스트가 파일명이 됩니다 👍
-        </div>
-
-        <div class="feature-grid">
-            <div class="feature fade-in">
-                <div class="feature-icon">🔤</div>
-                <div class="feature-title">지정 글꼴</div>
-                <div class="feature-desc">한글: 맑은 고딕<br>영문: Times New Roman</div>
-            </div>
-            <div class="feature fade-in">
-                <div class="feature-icon">📏</div>
-                <div class="feature-title">폰트 크기 자동 조정</div>
-                <div class="feature-desc">텍스트 길이에 맞춰 자동 조정</div>
-            </div>
-            <div class="feature fade-in">
-                <div class="feature-icon">⚡</div>
-                <div class="feature-title">문의사항</div>
-                <div class="feature-desc">있으시면 언제든지 말씀해주세요(YHJ)</div>
-            </div>
-        </div>
+    <!-- -------------------------------------------------------
+         헤더
+    ------------------------------------------------------- -->
+    <div class="header fade-in">
+        <h1 class="title">표장 생성기</h1>
+        <p class="subtitle">텍스트를 고품질 이미지로 변환하세요</p>
     </div>
 
-    <script>
-        let canvas, ctx;
+    <div class="main-grid">
 
-        function init() {
-            canvas = document.getElementById('preview-canvas');
-            ctx = canvas.getContext('2d');
-            
-            // 초기 캔버스 설정
-            ctx.fillStyle = 'white';
-            ctx.fillRect(0, 0, 945, 945);
-            
-            // 가이드 텍스트
-            ctx.fillStyle = '#cccccc';
-            ctx.font = '24px "Malgun Gothic", "맑은 고딕", sans-serif';
-            ctx.textAlign = 'center';
-            ctx.fillText('텍스트 입력 후 생성 버튼을 눌러주세요', 472.5, 472.5);
-        }
+        <!-- -------------------------------------------------------
+             입력 카드 (좌측)
+        ------------------------------------------------------- -->
+        <div class="card fade-in">
+            <h2 class="card-title">✏️ 텍스트 입력</h2>
 
-        function cleanFilename(text) {
-            const fullText = text.replace(/\n/g, ' ').trim();
-            const cleaned = fullText.replace(/[\/\\:\*\?"<>\|]/g, '');
-            return cleaned.substring(0, 150);
-        }
+            <!-- 기본 폰트 선택 -->
+            <div class="setting-row">
+                <label>🔤 기본 폰트:</label>
+                <select class="font-select" id="default-font-select">
+                    <!-- 영문: Times New Roman / 한글 fallback: 맑은 고딕 -->
+                    <option value='"Times New Roman","Malgun Gothic","맑은 고딕",serif'>Times New Roman (기본)</option>
+                    <option value='"Malgun Gothic","맑은 고딕",sans-serif'>맑은 고딕</option>
+                    <option value='"Gulim","굴림",sans-serif'>굴림</option>
+                    <option value='"Dotum","돋움",sans-serif'>돋움</option>
+                    <option value='"Batang","바탕",serif'>바탕</option>
+                    <option value='Arial,sans-serif'>Arial</option>
+                    <option value='"Courier New",monospace'>Courier New</option>
+                    <option value='Georgia,serif'>Georgia</option>
+                </select>
+            </div>
 
-        function measureText(text, font) {
-            ctx.font = font;
-            return ctx.measureText(text).width;
-        }
+            <!-- 전체 크기 모드 선택 -->
+            <div class="setting-row">
+                <label>📐 크기:</label>
 
-        function getOptimalFontSize(lines, maxWidth, maxHeight) {
-            let fontSize = 200;
-            const lineSpacingRatio = 1.2;
-            
-            while (fontSize > 10) {
-                const fontString = `${fontSize}px "Times New Roman", "Malgun Gothic", "맑은 고딕", serif`;
-                
-                // 각 줄의 너비 계산
-                let maxLineWidth = 0;
-                for (let line of lines) {
-                    const width = measureText(line, fontString);
-                    maxLineWidth = Math.max(maxLineWidth, width);
-                }
-                
-                // 전체 높이 계산
-                const totalHeight = lines.length * fontSize * lineSpacingRatio;
-                
-                // 70% 범위 내에 들어오는지 확인
-                if (maxLineWidth <= maxWidth * 0.7 && totalHeight <= maxHeight * 0.7) {
-                    return fontSize;
-                }
-                
-                fontSize -= 5;
-            }
-            
-            return fontSize;
-        }
+                <!-- 라디오: 자동 -->
+                <label style="display:flex;align-items:center;gap:0.3rem;font-weight:400;cursor:pointer;">
+                    <input type="radio" name="size-mode" value="auto" checked onchange="toggleSizeMode(this)">
+                    자동
+                </label>
 
-        async function generateImage() {
-            const text = document.getElementById('text-input').value.trim();
-            
-            if (!text) {
-                alert('텍스트를 입력해주세요.');
-                return;
-            }
+                <!-- 라디오: 직접 지정 -->
+                <label style="display:flex;align-items:center;gap:0.3rem;font-weight:400;cursor:pointer;">
+                    <input type="radio" name="size-mode" value="manual" onchange="toggleSizeMode(this)">
+                    직접 지정
+                </label>
 
-            // 로딩 상태 표시
-            document.getElementById('loading').style.display = 'block';
-            document.querySelector('.button').disabled = true;
+                <!-- 직접 지정 선택 시 표시되는 숫자 입력 (기본 hidden) -->
+                <div id="manual-size-wrap" style="display:none;align-items:center;gap:0.4rem;">
+                    <input type="number" id="font-size-input" class="size-number-input"
+                           value="40" min="20" max="500" step="5">
+                    <span style="font-size:0.85rem;color:var(--text-light);">pt</span>
+                </div>
+            </div>
 
-            // 약간의 지연 후 생성 (UI 반응성)
-            setTimeout(() => {
-                try {
-                    // 캔버스 초기화
-                    ctx.fillStyle = 'white';
-                    ctx.fillRect(0, 0, 945, 945);
-                    
-                    const lines = text.split('\n');
-                    const fontSize = getOptimalFontSize(lines, 945, 945);
-                    const lineSpacing = fontSize * 0.2;
-                    
-                    // 전체 블록 높이 계산 (alphabetic baseline 보정: fontSize의 약 20% 위로)
-                    const totalBlockHeight = lines.length * (fontSize + lineSpacing) - lineSpacing;
-                    let currentY = (945 - totalBlockHeight) / 2 + fontSize * 0.8;
-                    
-                    // 텍스트 렌더링 설정
-                    ctx.fillStyle = 'black';
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'alphabetic';
-                    
-                    // 각 줄 렌더링
-                    for (let line of lines) {
-                        ctx.font = `${fontSize}px "Times New Roman", "Malgun Gothic", "맑은 고딕", serif`;
-                        ctx.fillText(line, 472.5, currentY);
-                        currentY += fontSize + lineSpacing;
-                    }
-                    
-                    // 다운로드 링크 생성
-                    const fileName = `${cleanFilename(text)}.jpg`;
-                    canvas.toBlob((blob) => {
-                        const url = URL.createObjectURL(blob);
-                        const downloadLink = document.getElementById('download-link');
-                        downloadLink.href = url;
-                        downloadLink.download = fileName;
-                        downloadLink.style.display = 'inline-block';
-                        downloadLink.classList.add('fade-in');
-                    }, 'image/jpeg', 1.0);
-                    
-                } catch (error) {
-                    alert('이미지 생성 중 오류가 발생했습니다: ' + error.message);
-                } finally {
-                    // 로딩 상태 해제
-                    document.getElementById('loading').style.display = 'none';
-                    document.querySelector('.button').disabled = false;
-                }
-            }, 100);
-        }
+            <!-- 부분 적용 안내 힌트 -->
+            <div class="toolbar-hint">
+                💡 텍스트를 <strong>드래그</strong>해서 선택 후, 폰트/크기를 골라 <strong>적용</strong> 버튼을 누르세요
+            </div>
 
-        // 엔터키 지원
-        document.getElementById('text-input').addEventListener('keydown', function(e) {
-            if (e.ctrlKey && e.key === 'Enter') {
-                generateImage();
-            }
+            <!-- 부분 적용 툴바 -->
+            <div class="font-toolbar">
+                <label>부분 폰트:</label>
+
+                <!-- 부분 적용할 폰트 드롭다운 -->
+                <select class="font-select" id="partial-font-select">
+                    <option value='"Times New Roman","Malgun Gothic","맑은 고딕",serif'>Times New Roman</option>
+                    <option value='"Malgun Gothic","맑은 고딕",sans-serif'>맑은 고딕</option>
+                    <option value='"Gulim","굴림",sans-serif'>굴림</option>
+                    <option value='"Dotum","돋움",sans-serif'>돋움</option>
+                    <option value='"Batang","바탕",serif'>바탕</option>
+                    <option value='Arial,sans-serif'>Arial</option>
+                    <option value='"Courier New",monospace'>Courier New</option>
+                    <option value='Georgia,serif'>Georgia</option>
+                </select>
+
+                <label>크기:</label>
+
+                <!-- 부분 적용할 크기 드롭다운: 20pt 시작, 5pt 단위 -->
+                <select class="font-select" id="partial-size-select" style="flex:0;min-width:85px;">
+                    <option value="">기본</option>   <!-- 기본: 전체 크기 모드 따름 -->
+                    <option value="20">20pt</option>
+                    <option value="25">25pt</option>
+                    <option value="30">30pt</option>
+                    <option value="35">35pt</option>
+                    <option value="40">40pt</option>
+                    <option value="45">45pt</option>
+                    <option value="50">50pt</option>
+                    <option value="55">55pt</option>
+                    <option value="60">60pt</option>
+                    <option value="65">65pt</option>
+                    <option value="70">70pt</option>
+                    <option value="75">75pt</option>
+                    <option value="80">80pt</option>
+                    <option value="85">85pt</option>
+                    <option value="90">90pt</option>
+                    <option value="95">95pt</option>
+                    <option value="100">100pt</option>
+                    <option value="105">105pt</option>
+                    <option value="110">110pt</option>
+                    <option value="115">115pt</option>
+                    <option value="120">120pt</option>
+                    <option value="125">125pt</option>
+                    <option value="130">130pt</option>
+                    <option value="135">135pt</option>
+                    <option value="140">140pt</option>
+                    <option value="145">145pt</option>
+                    <option value="150">150pt</option>
+                    <option value="160">160pt</option>
+                    <option value="170">170pt</option>
+                    <option value="180">180pt</option>
+                    <option value="190">190pt</option>
+                    <option value="200">200pt</option>
+                </select>
+
+                <button class="apply-btn" onclick="applyPartialFont()">✅ 적용</button>
+                <button class="reset-btn"  onclick="resetAllFonts()">↩ 초기화</button>
+            </div>
+
+            <!-- 텍스트 입력 에디터 (contenteditable) -->
+            <div id="editor" contenteditable="true" spellcheck="false"></div>
+
+            <!-- 이미지 생성 버튼 -->
+            <button class="button" onclick="generateImage()">🎨 이미지 생성 (Ctrl+Enter)</button>
+            <div class="loading" id="loading">이미지 생성 중...</div>
+        </div>
+
+        <!-- -------------------------------------------------------
+             미리보기 카드 (우측)
+        ------------------------------------------------------- -->
+        <div class="card fade-in">
+            <h2 class="card-title">🖼️ 미리보기</h2>
+            <div class="preview-container">
+                <!-- 실제 렌더링 캔버스: 945×945px (8cm×8cm @ 300DPI) -->
+                <div class="canvas-wrapper">
+                    <canvas id="preview-canvas" width="945" height="945"></canvas>
+                </div>
+                <!-- 생성 후 표시되는 JPG 다운로드 링크 -->
+                <a id="download-link" class="download-btn" style="display:none;">📥 다운로드</a>
+            </div>
+        </div>
+
+    </div><!-- /.main-grid -->
+
+    <!-- 하단 정보 배너 -->
+    <div class="info fade-in">
+        ℹ️ &nbsp;<strong>8cm × 8cm, 300 DPI </strong> &nbsp;|&nbsp; 입력한 텍스트가 파일명이 됩니다 👍
+    </div>
+
+</div><!-- /.container -->
+
+
+<script>
+    // =============================================================
+    // 1. 전역 변수
+    // =============================================================
+    let canvas, ctx;  // 캔버스 엘리먼트 및 2D 드로잉 컨텍스트
+
+
+    // =============================================================
+    // 2. 초기화 (페이지 로드 시 실행)
+    // =============================================================
+    function init() {
+        canvas = document.getElementById('preview-canvas');
+        ctx    = canvas.getContext('2d');
+
+        drawGuide();  // 초기 안내 텍스트 표시
+
+        // 기본 폰트 변경 시 → 에디터 미리보기 폰트도 동기화
+        document.getElementById('default-font-select').addEventListener('change', function () {
+            document.getElementById('editor').style.fontFamily = this.value;
         });
 
-        // 페이지 로드 시 초기화
-        window.addEventListener('load', init);
+        // Ctrl+Enter → 이미지 생성 단축키
+        document.getElementById('editor').addEventListener('keydown', function (e) {
+            if (e.ctrlKey && e.key === 'Enter') { e.preventDefault(); generateImage(); }
+        });
+    }
 
-        // 우클릭 방지 스크립트
-document.addEventListener('contextmenu', function(e) {
-  e.preventDefault();
-}, false);
+    // 캔버스에 초기 안내 문구 표시
+    function drawGuide() {
+        ctx.fillStyle = 'white';
+        ctx.fillRect(0, 0, 945, 945);                                  // 흰 배경
+        ctx.fillStyle = '#cccccc';
+        ctx.font      = '24px "Malgun Gothic","맑은 고딕",sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('텍스트를 입력하고 생성 버튼을 눌러주세요', 472.5, 472.5);
+    }
 
-// 드래그 및 선택 방지
-document.addEventListener('selectstart', function(e) {
-  e.preventDefault();
-}, false);
-    </script>
+
+    // =============================================================
+    // 3. UI 이벤트 핸들러
+    // =============================================================
+
+    // 크기 모드 라디오 변경: "직접 지정" 선택 시 숫자 입력창 표시
+    function toggleSizeMode(radio) {
+        const wrap = document.getElementById('manual-size-wrap');
+        wrap.style.display = radio.value === 'manual' ? 'flex' : 'none';
+    }
+
+
+    // =============================================================
+    // 4. 부분 폰트·크기 적용 / 초기화
+    // =============================================================
+
+    // 드래그 선택한 텍스트에 폰트·크기를 <span>으로 감싸 적용
+    function applyPartialFont() {
+        const sel    = window.getSelection();
+        const editor = document.getElementById('editor');
+
+        // 선택 없으면 경고
+        if (!sel || sel.isCollapsed) {
+            alert('먼저 텍스트를 드래그해서 선택해 주세요.'); return;
+        }
+        // 에디터 바깥 선택 방지
+        if (!editor.contains(sel.anchorNode)) {
+            alert('에디터 안의 텍스트를 선택해 주세요.'); return;
+        }
+
+        const fontValue = document.getElementById('partial-font-select').value;  // 선택된 폰트
+        const sizeValue = document.getElementById('partial-size-select').value;  // 선택된 크기 (없으면 "")
+
+        const range    = sel.getRangeAt(0);
+        const fragment = range.extractContents();  // 선택 구간 추출
+
+        // span 생성 후 폰트/크기 data 저장
+        const span = document.createElement('span');
+        span.style.fontFamily = fontValue;
+        span.dataset.font     = fontValue;  // 나중에 파싱할 때 사용
+
+        if (sizeValue) {
+            span.dataset.size      = sizeValue;                               // 실제 pt 값 저장
+            span.style.fontSize    = (parseInt(sizeValue) * 0.15) + 'px';    // 에디터 미리보기용 상대 크기
+        }
+
+        span.appendChild(fragment);
+        range.insertNode(span);    // 선택 위치에 span 삽입
+        sel.removeAllRanges();     // 선택 해제
+    }
+
+    // 에디터 내 모든 부분 적용(span) 제거 → 기본 폰트로 초기화
+    function resetAllFonts() {
+        const editor = document.getElementById('editor');
+        const spans  = editor.querySelectorAll('span[data-font]');
+
+        spans.forEach(span => {
+            // span을 벗기고 자식 텍스트 노드만 남김
+            while (span.firstChild) span.parentNode.insertBefore(span.firstChild, span);
+            span.parentNode.removeChild(span);
+        });
+
+        editor.normalize();  // 인접 텍스트 노드 병합 (DOM 정리)
+    }
+
+
+    // =============================================================
+    // 5. 에디터 파싱: 줄별 세그먼트 배열 추출
+    //    반환 형태: [ [{text, font, size}, ...], ... ]
+    //    각 배열 = 한 줄, 각 객체 = 같은 폰트·크기의 연속 텍스트 조각
+    // =============================================================
+    function parseEditorSegments() {
+        const editor      = document.getElementById('editor');
+        const defaultFont = document.getElementById('default-font-select').value;
+        const rawSegments = [];  // 줄바꿈 포함 flat 세그먼트 목록
+
+        // DOM 노드를 재귀적으로 순회하며 텍스트·폰트·크기 수집
+        function walkNode(node, inheritedFont, inheritedSize) {
+            if (node.nodeType === Node.TEXT_NODE) {
+                // 텍스트 노드: 내용이 있으면 세그먼트로 추가
+                if (node.textContent) {
+                    rawSegments.push({ text: node.textContent, font: inheritedFont, size: inheritedSize });
+                }
+            } else if (node.nodeName === 'BR') {
+                // <br>: 줄바꿈 세그먼트 추가
+                rawSegments.push({ text: '\n', font: inheritedFont, size: inheritedSize });
+            } else if (node.nodeName === 'DIV' || node.nodeName === 'P') {
+                // 블록 요소: 앞에 줄바꿈 추가 (첫 번째 제외)
+                if (rawSegments.length > 0) {
+                    rawSegments.push({ text: '\n', font: inheritedFont, size: inheritedSize });
+                }
+                // 자식 노드 순회 시 상속 폰트·크기 전달
+                const f = (node.style && node.style.fontFamily) ? node.style.fontFamily : inheritedFont;
+                const s = (node.dataset && node.dataset.size)   ? parseInt(node.dataset.size) : inheritedSize;
+                node.childNodes.forEach(child => walkNode(child, f, s));
+            } else {
+                // <span> 등 인라인 요소: span에 저장된 폰트·크기 우선 사용
+                const f = (node.style && node.style.fontFamily) ? node.style.fontFamily : inheritedFont;
+                const s = (node.dataset && node.dataset.size)   ? parseInt(node.dataset.size) : inheritedSize;
+                node.childNodes.forEach(child => walkNode(child, f, s));
+            }
+        }
+
+        // 에디터 최상위 자식부터 순회 시작
+        editor.childNodes.forEach(child => walkNode(child, defaultFont, null));
+
+        // rawSegments를 '\n' 기준으로 줄 배열로 변환
+        const lines      = [];
+        let   currentLine = [];
+
+        rawSegments.forEach(seg => {
+            const parts = seg.text.split('\n');
+            parts.forEach((part, idx) => {
+                if (part) currentLine.push({ text: part, font: seg.font, size: seg.size });
+                if (idx < parts.length - 1) {   // '\n'이 있으면 새 줄 시작
+                    lines.push(currentLine);
+                    currentLine = [];
+                }
+            });
+        });
+
+        if (currentLine.length > 0) lines.push(currentLine);  // 마지막 줄 추가
+
+        return lines;
+    }
+
+
+    // =============================================================
+    // 6. 폰트 크기 결정 (자동 맞춤 or 수동 고정)
+    // =============================================================
+    function getBaseFontSize(lines) {
+        const isManual = document.querySelector('input[name="size-mode"]:checked').value === 'manual';
+
+        // 수동 모드: 입력값 그대로 반환
+        if (isManual) {
+            return parseInt(document.getElementById('font-size-input').value) || 40;
+        }
+
+        // 자동 모드: 캔버스 75% 영역 안에 맞는 최대 폰트 크기 탐색
+        const maxW = 945 * 0.75;
+        const maxH = 945 * 0.75;
+        let fontSize = 200;  // 최대값부터 4씩 줄이며 탐색
+
+        while (fontSize > 10) {
+            // 모든 줄의 너비 중 최댓값 계산
+            let maxLineW = 0;
+            for (const segs of lines) {
+                let lineW = 0;
+                for (const seg of segs) {
+                    const fs = seg.size || fontSize;       // 세그먼트 고정 크기가 있으면 우선
+                    ctx.font = `${fs}px ${seg.font}`;
+                    lineW   += ctx.measureText(seg.text).width;
+                }
+                maxLineW = Math.max(maxLineW, lineW);
+            }
+
+            // 전체 높이: 줄 수 × 줄 높이(fontSize × 1.2)
+            const maxSegSize = Math.max(...lines.flat().map(s => s.size || fontSize));
+            const lineH      = maxSegSize * 1.2;
+            const totalH     = lines.length * lineH - (lineH - maxSegSize);
+
+            if (maxLineW <= maxW && totalH <= maxH) return fontSize;  // 조건 충족 시 반환
+            fontSize -= 4;
+        }
+
+        return fontSize;
+    }
+
+
+    // =============================================================
+    // 7. 이미지 생성 및 다운로드 링크 생성
+    // =============================================================
+    function generateImage() {
+        const editor    = document.getElementById('editor');
+        const plainText = editor.innerText.trim();
+
+        if (!plainText) { alert('텍스트를 입력해주세요.'); return; }
+
+        // 버튼 비활성화 + 로딩 표시
+        document.getElementById('loading').style.display = 'block';
+        document.querySelector('.button').disabled = true;
+
+        // setTimeout으로 UI 업데이트 후 렌더링 실행
+        setTimeout(() => {
+            try {
+                // 캔버스 초기화 (흰 배경)
+                ctx.fillStyle = 'white';
+                ctx.fillRect(0, 0, 945, 945);
+
+                const lines        = parseEditorSegments();
+                const baseFontSize = getBaseFontSize(lines);
+
+                // 각 줄의 높이: 해당 줄에서 가장 큰 크기 × 1.2 (행간)
+                const lineHeights = lines.map(segs => {
+                    const maxSz = Math.max(...segs.map(s => s.size || baseFontSize));
+                    return maxSz * 1.2;
+                });
+
+                // 전체 블록 높이로 수직 중앙 Y 계산
+                const totalBlockH = lineHeights.reduce((a, b) => a + b, 0) - (lineHeights[0] * 0.2);
+                const firstLineMaxSz = lines[0]
+                    ? Math.max(...lines[0].map(s => s.size || baseFontSize))
+                    : baseFontSize;
+                let currentY = (945 - totalBlockH) / 2 + firstLineMaxSz * 0.8;  // baseline 보정
+
+                ctx.fillStyle    = 'black';
+                ctx.textBaseline = 'alphabetic';
+
+                // 줄별 렌더링
+                lines.forEach((segs, li) => {
+                    const lineMaxSz = Math.max(...segs.map(s => s.size || baseFontSize));
+
+                    // 줄 전체 너비 합산 → 수평 중앙 X 계산
+                    let totalLineW = 0;
+                    for (const seg of segs) {
+                        ctx.font    = `${seg.size || baseFontSize}px ${seg.font}`;
+                        totalLineW += ctx.measureText(seg.text).width;
+                    }
+
+                    let x = (945 - totalLineW) / 2;  // 중앙 정렬 시작 X
+
+                    // 세그먼트별 텍스트 그리기
+                    for (const seg of segs) {
+                        const fs = seg.size || baseFontSize;
+                        ctx.font      = `${fs}px ${seg.font}`;
+                        ctx.textAlign = 'left';
+
+                        // 크기 혼합 시 baseline 맞춤: 작은 글자를 줄 최대 크기 기준으로 내림
+                        const yOffset = currentY + (lineMaxSz - fs) * 0.5;
+                        ctx.fillText(seg.text, x, yOffset);
+                        x += ctx.measureText(seg.text).width;  // 다음 세그먼트 X 위치
+                    }
+
+                    currentY += lineHeights[li];  // 다음 줄 Y 위치
+                });
+
+                // 캔버스 → Blob → 다운로드 링크 생성
+                const fileName = cleanFilename(plainText) + '.jpg';
+                canvas.toBlob(blob => {
+                    const url = URL.createObjectURL(blob);
+                    const dl  = document.getElementById('download-link');
+                    dl.href    = url;
+                    dl.download = fileName;
+                    dl.style.display = 'inline-block';
+                    dl.classList.add('fade-in');
+                }, 'image/jpeg', 1.0);  // JPEG 최고 품질
+
+            } catch (e) {
+                alert('오류: ' + e.message);
+            } finally {
+                // 로딩 해제
+                document.getElementById('loading').style.display = 'none';
+                document.querySelector('.button').disabled = false;
+            }
+        }, 100);
+    }
+
+
+    // =============================================================
+    // 8. 유틸리티
+    // =============================================================
+
+    // 파일명 정제: 줄바꿈 제거 + 파일명 금지 문자 제거 + 150자 제한
+    function cleanFilename(text) {
+        return text
+            .replace(/\n/g, ' ')
+            .trim()
+            .replace(/[\/\\:\*\?"<>\|]/g, '')
+            .substring(0, 150);
+    }
+
+
+    // =============================================================
+    // 9. 진입점
+    // =============================================================
+    window.addEventListener('load', init);  // 페이지 로드 완료 후 init() 실행
+
+</script>
 </body>
 </html>
